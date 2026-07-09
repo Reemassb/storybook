@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Little Explorer — Personalized Storybooks</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:ital,wght@0,400;0,600;0,700;0,800&family=Baloo+Bhaijaan+2:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{
+  --paper:#FFF8EC; --card:#fff; --ink:#3B2A4A; --ink-soft:#6D5C80;
+  --coral:#FF7A59; --coral-deep:#E85D3A; --sunny:#FFC948; --teal:#35A7A0;
+  --sand:#F5DEB0; --night:#2A2350;
+  --radius:22px; --shadow:0 10px 30px rgba(59,42,74,.12);
+  --font-display:'Fredoka',sans-serif; --font-body:'Nunito',sans-serif;
+}
+html[dir=rtl]{
+  --font-display:'Baloo Bhaijaan 2',sans-serif;
+  --font-body:'Baloo Bhaijaan 2',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:var(--font-body);background:var(--paper);color:var(--ink);min-height:100vh;
+  background-image:
+    radial-gradient(circle at 8% 12%, rgba(255,201,72,.14) 0 90px, transparent 90px),
+    radial-gradient(circle at 92% 20%, rgba(53,167,160,.10) 0 120px, transparent 120px),
+    radial-gradient(circle at 85% 85%, rgba(255,122,89,.10) 0 100px, transparent 100px);
+}
+.wrap{max-width:760px;margin:0 auto;padding:28px 18px 80px}
+.screen{display:none}
+.screen.on{display:block;animation:fadein .4s ease}
+@keyframes fadein{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.screen.on,.page.on{animation:none}}
+
+header{text-align:center;margin-bottom:24px}
+.kicker{display:inline-block;font-family:var(--font-display);font-weight:600;font-size:.8rem;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--teal);
+  border:2px solid var(--teal);border-radius:999px;padding:5px 14px;margin-bottom:12px;background:#fff}
+html[dir=rtl] .kicker{letter-spacing:0}
+h1{font-family:var(--font-display);font-weight:700;font-size:clamp(1.7rem,5vw,2.5rem);line-height:1.15}
+h1 .pop{color:var(--coral)}
+header p{color:var(--ink-soft);margin-top:8px;font-weight:600}
+
+.card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);
+  padding:26px;border:2px solid rgba(59,42,74,.06);margin-bottom:18px}
+h2{font-family:var(--font-display);font-weight:600;font-size:1.25rem;margin-bottom:6px}
+.sub{color:var(--ink-soft);font-weight:600;font-size:.92rem;margin-bottom:16px}
+
+label.field{display:block;font-weight:800;font-size:.9rem;margin-bottom:6px}
+input[type=text]{width:100%;padding:13px 16px;font:inherit;font-weight:700;font-size:1.05rem;
+  border:2px solid rgba(59,42,74,.18);border-radius:14px;background:var(--paper);color:var(--ink)}
+input[type=text]:focus{outline:3px solid var(--sunny);border-color:var(--ink)}
+
+.btn{font-family:var(--font-display);font-weight:600;font-size:1.05rem;border:none;cursor:pointer;
+  padding:14px 30px;border-radius:999px;color:#fff;background:var(--coral);
+  box-shadow:0 5px 0 var(--coral-deep);transition:transform .12s, box-shadow .12s}
+.btn:hover{transform:translateY(-2px)}
+.btn:active{transform:translateY(2px);box-shadow:0 2px 0 var(--coral-deep)}
+.btn:focus-visible{outline:3px solid var(--sunny)}
+.btn.ghost{background:#fff;color:var(--ink);box-shadow:0 4px 0 rgba(59,42,74,.15);border:2px solid rgba(59,42,74,.15)}
+.btn.small{font-size:.9rem;padding:9px 18px}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.center{text-align:center}
+.row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+
+/* language picker */
+.langpick{display:flex;gap:18px;justify-content:center;flex-wrap:wrap;margin-top:10px}
+.langpick button{
+  font-family:'Baloo Bhaijaan 2','Fredoka',sans-serif;font-size:1.5rem;font-weight:700;
+  padding:26px 44px;border-radius:22px;border:3px solid rgba(59,42,74,.12);background:#fff;
+  color:var(--ink);cursor:pointer;box-shadow:var(--shadow);transition:transform .15s,border-color .15s}
+.langpick button:hover{transform:translateY(-4px);border-color:var(--coral)}
+.langpick small{display:block;font-size:.85rem;color:var(--ink-soft);font-weight:600;margin-top:4px}
+
+/* theme picker */
+.themepick{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:16px;margin-top:8px}
+.themepick button{
+  font-family:var(--font-display);font-weight:600;font-size:1.15rem;color:var(--ink);cursor:pointer;
+  padding:26px 16px;border-radius:22px;border:3px solid rgba(59,42,74,.12);background:#fff;
+  box-shadow:var(--shadow);transition:transform .15s,border-color .15s;text-align:center}
+.themepick button:hover{transform:translateY(-4px);border-color:var(--coral)}
+.themepick .ticon{font-size:2.6rem;display:block;margin-bottom:8px}
+.themepick small{display:block;font-family:var(--font-body);font-weight:600;font-size:.85rem;color:var(--ink-soft);margin-top:6px}
+
+/* gender pick */
+.pills{display:flex;gap:10px;flex-wrap:wrap}
+.pills button{font:inherit;font-weight:800;font-size:1rem;padding:11px 22px;border-radius:999px;
+  border:2px solid rgba(59,42,74,.18);background:#fff;color:var(--ink-soft);cursor:pointer}
+.pills button.on{background:var(--teal);border-color:var(--teal);color:#fff}
+
+/* upload */
+.upload-zone{border:3px dashed rgba(59,42,74,.25);border-radius:18px;padding:24px;text-align:center;
+  cursor:pointer;transition:.2s;background:var(--paper)}
+.upload-zone:hover{border-color:var(--coral);background:#FFF3E8}
+.upload-zone .emoji{font-size:2rem;display:block;margin-bottom:6px}
+.upload-zone strong{font-family:var(--font-display);font-weight:600;display:block;margin-bottom:4px}
+.upload-zone span{color:var(--ink-soft);font-weight:600;font-size:.9rem}
+#fileInput{display:none}
+.thumb{display:none;margin:14px auto 0;width:130px;height:130px;border-radius:20px;object-fit:cover;
+  box-shadow:var(--shadow);border:3px solid #fff}
+.privacy{margin-top:12px;font-size:.82rem;color:var(--ink-soft);font-weight:600;text-align:center}
+.phototips{margin-top:10px;font-size:.85rem;font-weight:700;color:var(--teal);text-align:center}
+
+.notice{padding:13px 16px;border-radius:14px;font-weight:700;font-size:.92rem;margin-top:14px;display:none}
+.notice.err{display:block;background:#FDEAEA;color:#B3261E}
+.notice.ok{display:block;background:#E6F6EC;color:#1F7A3D}
+.credits{font-size:.85rem;font-weight:800;color:var(--teal);text-align:center;margin-top:10px}
+
+/* character approval */
+.charbox{display:flex;flex-direction:column;align-items:center;gap:16px}
+.charbox img{width:min(340px,84vw);border-radius:22px;box-shadow:var(--shadow)}
+
+/* progress */
+.progress-wrap{margin-top:8px}
+.bigbar{height:18px;border-radius:999px;background:#EFE6D4;overflow:hidden;box-shadow:inset 0 2px 4px rgba(59,42,74,.08)}
+.bigbar div{height:100%;width:0%;border-radius:999px;background:linear-gradient(90deg,var(--sunny),var(--coral));transition:width .6s ease}
+.progmsg{text-align:center;font-family:var(--font-display);font-weight:600;font-size:1.1rem;margin-top:16px;min-height:1.5em}
+.progsub{text-align:center;color:var(--ink-soft);font-weight:700;font-size:.85rem;margin-top:6px}
+.thumbrow{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:18px}
+.thumbrow .t{width:56px;height:56px;border-radius:12px;background:#EFE6D4;display:flex;align-items:center;
+  justify-content:center;font-size:1.1rem;overflow:hidden;box-shadow:var(--shadow)}
+.thumbrow .t img{width:100%;height:100%;object-fit:cover}
+
+/* book */
+.book{position:relative;max-width:560px;margin:0 auto;border-radius:26px;overflow:hidden;
+  box-shadow:0 20px 50px rgba(42,35,80,.28);background:var(--night)}
+.page{display:none}
+.page.on{display:block;animation:pagein .5s ease}
+@keyframes pagein{from{opacity:0;transform:translateX(26px)}to{opacity:1;transform:none}}
+.page img.illu{width:100%;display:block;aspect-ratio:1;object-fit:cover;background:#EFE6D4}
+.caption{background:#FFFDF6;padding:20px 26px 22px;text-align:center;position:relative}
+.caption::before{content:'';position:absolute;top:0;left:8%;right:8%;height:3px;border-radius:3px;background:var(--sunny)}
+.caption .booktitle{font-family:var(--font-display);font-weight:700;font-size:1.5rem;line-height:1.25;margin-bottom:4px}
+.caption p{font-size:1.1rem;font-weight:700;line-height:1.6}
+.caption .kidname{color:var(--coral);font-family:var(--font-display);font-weight:700}
+.pageno{font-size:.75rem;letter-spacing:.1em;color:var(--ink-soft);font-weight:800;margin-top:10px;text-transform:uppercase}
+html[dir=rtl] .pageno{letter-spacing:0}
+.booknav{display:flex;justify-content:center;gap:12px;margin-top:18px;flex-wrap:wrap}
+.pagefix{text-align:center;margin-top:10px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- ============ SCREEN 0: LANGUAGE ============ -->
+<section class="screen on" id="s-lang">
+  <header>
+    <div class="kicker">Little Explorer 🐪🚀🐠 المستكشف الصغير</div>
+    <h1>Choose your language<br>اختر لغة القصة</h1>
+  </header>
+  <div class="langpick">
+    <button onclick="setLang('ar')">العربية<small>قصة بالعربية</small></button>
+    <button onclick="setLang('en')">English<small>Story in English</small></button>
+  </div>
+</section>
+
+<!-- ============ SCREEN 1: ACCESS CODE ============ -->
+<section class="screen" id="s-code">
+  <header>
+    <div class="kicker" data-t="kicker"></div>
+    <h1 data-t="codeTitle"></h1>
+    <p data-t="codeSub"></p>
+  </header>
+  <div class="card">
+    <label class="field" for="codeInput" data-t="codeLabel"></label>
+    <input type="text" id="codeInput" autocomplete="off" placeholder="XXXX-XXXX-XXXX" style="text-transform:uppercase">
+    <div class="notice" id="codeNotice"></div>
+    <div class="center" style="margin-top:18px">
+      <button class="btn" id="codeBtn" onclick="checkCode()" data-t="codeBtn"></button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SCREEN 2: THEME PICKER ============ -->
+<section class="screen" id="s-theme">
+  <header>
+    <div class="kicker" data-t="kicker"></div>
+    <h1 data-t="themeTitle"></h1>
+    <p data-t="themeSub"></p>
+  </header>
+  <div class="themepick" id="themePick"></div>
+</section>
+
+<!-- ============ SCREEN 3: CHILD SETUP ============ -->
+<section class="screen" id="s-setup">
+  <header>
+    <div class="kicker" data-t="kicker"></div>
+    <h1 data-t="setupTitle"></h1>
+    <p data-t="setupSub"></p>
+  </header>
+  <div class="card">
+    <label class="field" for="kidName" data-t="nameLabel"></label>
+    <input type="text" id="kidName" maxlength="20" autocomplete="off">
+    <div style="height:16px"></div>
+    <label class="field" data-t="genderLabel"></label>
+    <div class="pills" id="genderPills">
+      <button data-g="boy" data-t="boy"></button>
+      <button data-g="girl" data-t="girl"></button>
+    </div>
+    <div style="height:16px"></div>
+    <label class="field" data-t="photoLabel"></label>
+    <div class="upload-zone" id="dropZone">
+      <span class="emoji">📷</span>
+      <strong data-t="photoTitle"></strong>
+      <span data-t="photoHint"></span>
+    </div>
+    <input type="file" id="fileInput" accept="image/*">
+    <img class="thumb" id="thumb" alt="">
+    <p class="phototips" data-t="photoTips"></p>
+    <p class="privacy" data-t="privacy"></p>
+    <div class="notice" id="setupNotice"></div>
+    <div class="center" style="margin-top:18px">
+      <button class="btn" id="setupBtn" onclick="startCharacter()" disabled data-t="setupBtn"></button>
+    </div>
+    <p class="credits" id="creditsLine1"></p>
+  </div>
+</section>
+
+<!-- ============ SCREEN 4: CHARACTER APPROVAL ============ -->
+<section class="screen" id="s-char">
+  <header>
+    <div class="kicker" data-t="kicker"></div>
+    <h1 data-t="charTitle"></h1>
+    <p data-t="charSub"></p>
+  </header>
+  <div class="card charbox">
+    <div class="progress-wrap" id="charProgress" style="width:100%">
+      <div class="bigbar"><div id="charBar"></div></div>
+      <div class="progmsg" id="charMsg"></div>
+    </div>
+    <img id="charImg" style="display:none" alt="Cartoon character">
+    <div class="row" id="charActions" style="display:none">
+      <button class="btn" onclick="approveCharacter()" data-t="charApprove"></button>
+      <button class="btn ghost" onclick="regenCharacter()" data-t="charRetry"></button>
+    </div>
+    <div class="notice" id="charNotice"></div>
+    <p class="credits" id="creditsLine2"></p>
+  </div>
+</section>
+
+<!-- ============ SCREEN 5: GENERATING PAGES ============ -->
+<section class="screen" id="s-gen">
+  <header>
+    <div class="kicker" data-t="kicker"></div>
+    <h1 data-t="genTitle"></h1>
+    <p data-t="genSub"></p>
+  </header>
+  <div class="card">
+    <div class="progress-wrap">
+      <div class="bigbar"><div id="genBar"></div></div>
+      <div class="progmsg" id="genMsg"></div>
+      <div class="progsub" id="genSubMsg"></div>
+      <div class="thumbrow" id="thumbRow"></div>
+    </div>
+    <div class="notice" id="genNotice"></div>
+    <div class="center" id="genRetryWrap" style="display:none;margin-top:16px">
+      <button class="btn" onclick="resumeGeneration()" data-t="genRetry"></button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SCREEN 6: THE BOOK ============ -->
+<section class="screen" id="s-book">
+  <header>
+    <div class="kicker" data-t="kicker"></div>
+    <h1 data-t="bookTitle"></h1>
+    <p data-t="bookSub"></p>
+  </header>
+  <div class="book" id="book"></div>
+  <div class="booknav">
+    <button class="btn ghost" id="prevBtn" data-t="back"></button>
+    <button class="btn" id="nextBtn" data-t="next"></button>
+  </div>
+  <div class="pagefix">
+    <button class="btn ghost small" id="regenPageBtn" onclick="regenCurrentPage()" data-t="regenPage"></button>
+  </div>
+  <div class="center" style="margin-top:22px">
+    <button class="btn" id="pdfBtn" onclick="downloadPDF()" data-t="pdf"></button>
+  </div>
+  <div class="notice" id="bookNotice"></div>
+  <p class="credits" id="creditsLine3"></p>
+</section>
+
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ==================== CONFIG ==================== */
+const WORKER_URL = "https://storybook.reemafahmi.workers.dev";
+
+const CHAR_BASE = "This is a photo of a real child (a young {GENDER}). Create the SAME child as a cartoon character in soft 3D animated movie style. It is very important that the character is instantly recognizable as this exact child: keep the same face shape, eye shape and eye color, eyebrows, nose, mouth and smile, skin tone, and the exact same hairstyle and hair color. Apply only gentle stylization (soft smooth skin, slightly larger eyes, clean cartoon shading) and do not change the child's identity or facial features. {OUTFIT} Full body, standing, friendly smile, plain warm cream background. No text.";
+
+const SUFFIX_BASE = " Children's picture book illustration, soft 3D animated movie style, {PALETTE}, gentle lighting, wide composition. The attached image is the character reference: draw the exact same child with identical facial features, eyes, nose, mouth, skin tone, hairstyle, hair color and outfit — the face must stay clearly visible and recognizable in the scene. No text or letters in the image.";
+
+/* ==================== THEMES ==================== */
+const THEMES = {
+
+/* ---------------- DESERT 🐪 ---------------- */
+desert: {
+  icon:"🐪",
+  name:{en:"Desert Adventure",ar:"مغامرة الصحراء"},
+  tag:{en:"Dunes, a camel friend & a secret oasis",ar:"كثبان ذهبية وناقة لطيفة وواحة سرية"},
+  outfit:"Dress the character in a desert explorer outfit: khaki shorts and shirt, a small red-and-white checkered scarf around the neck, and a wide-brim explorer hat worn pushed back so the hair and full face stay clearly visible.",
+  palette:"warm golden desert palette",
+  fun:{
+    en:["Brushing golden sand onto the dunes… 🏜️","Teaching Dana the camel to smile… 🐪","Sprinkling stars over the desert… ✨","Warming up the campfire… 🔥","Asking the falcon to pose… 🦅","Filling the oasis with cool water… 💧"],
+    ar:["نفرش الرمال الذهبية على الكثبان… 🏜️","نعلّم الناقة دانة أن تبتسم… 🐪","ننثر النجوم فوق الصحراء… ✨","نشعل نار المخيّم… 🔥","نطلب من الصقر أن يقف للصورة… 🦅","نملأ الواحة بالماء البارد… 💧"]
+  },
+  story:[
+  { prompt:"The character stands proudly on top of a tall golden sand dune at sunrise, hands on hips, scarf fluttering in the wind, vast desert behind, a falcon circling high in the orange-pink sky.",
+    en:n=>({title:`${n}'s Desert Adventure`, text:"A story starring a very brave explorer."}),
+    ar:(n,g)=>({title:`مغامرة ${n} في الصحراء`, text: g==="boy"?"قصة بطلها مستكشف شجاع جدًا.":"قصة بطلتها مستكشفة شجاعة جدًا."}) },
+  { prompt:"The character stands at the edge of a small desert camp at dawn, adjusting an explorer hat, a rolled map tucked under one arm, endless soft dunes glowing gold in early morning light.",
+    en:n=>({text:`Early one morning, ${n} put on an explorer hat, tied a red scarf, and looked out at the golden desert. "Today," said ${n}, "I'm going to find the secret oasis!"`}),
+    ar:(n,g)=> g==="boy"
+     ? ({text:`في صباحٍ باكر، لبس ${n} قبعة المستكشفين، وربط وشاحه الأحمر، ونظر إلى الصحراء الذهبية. قال ${n}: "اليوم سأجد الواحة السرية!"`})
+     : ({text:`في صباحٍ باكر، لبست ${n} قبعة المستكشفين، وربطت وشاحها الأحمر، ونظرت إلى الصحراء الذهبية. قالت ${n}: "اليوم سأجد الواحة السرية!"`}) },
+  { prompt:"The character climbs a huge smooth sand dune, one knee up, laughing, small sand trails sliding down, view from slightly below to make the dune look grand, deep blue sky above.",
+    en:n=>({text:`The sand was warm and soft. Up, up, up the great dune ${n} climbed — slipping and giggling — until the whole desert appeared below like a sea of gold.`}),
+    ar:(n,g)=> g==="boy"
+     ? ({text:`كان الرمل دافئًا وناعمًا. صعد ${n} الكثيب الكبير — يتزحلق ويضحك — حتى ظهرت الصحراء كلها من تحته مثل بحرٍ من ذهب.`})
+     : ({text:`كان الرمل دافئًا وناعمًا. صعدت ${n} الكثيب الكبير — تتزحلق وتضحك — حتى ظهرت الصحراء كلها من تحتها مثل بحرٍ من ذهب.`}) },
+  { prompt:"The character meets a friendly cartoon camel with long eyelashes sitting on the dune crest; the camel wears a small colorful woven saddle blanket; both look at each other happily; warm midday desert light.",
+    en:n=>({text:`At the top sat a camel with long eyelashes and a friendly smile. "Hello! I'm Dana," said the camel. "Are you looking for the secret oasis? Hop on — I know the way!"`}),
+    ar:(n,g)=> g==="boy"
+     ? ({text:`وعلى القمة جلست ناقة برموش طويلة وابتسامة لطيفة. قالت الناقة: "مرحبًا! أنا دانة. هل تبحث عن الواحة السرية؟ اركب — أنا أعرف الطريق!"`})
+     : ({text:`وعلى القمة جلست ناقة برموش طويلة وابتسامة لطيفة. قالت الناقة: "مرحبًا! أنا دانة. هل تبحثين عن الواحة السرية؟ اركبي — أنا أعرف الطريق!"`}) },
+  { prompt:"The character rides the camel across rolling dunes, arms out for balance, a long wavy trail of footprints behind them stretching to the horizon, a few desert plants dotting the sand.",
+    en:n=>({text:`${n} climbed onto Dana's back, and off they went — swaying left, swaying right — over dune after dune, leaving a wiggly line of footprints in the sand.`}),
+    ar:(n,g)=> g==="boy"
+     ? ({text:`ركب ${n} على ظهر دانة، وانطلقا معًا — يتمايلان يمينًا ويسارًا — فوق كثيبٍ بعد كثيب، تاركين خلفهما خطًا متعرجًا من الآثار على الرمل.`})
+     : ({text:`ركبت ${n} على ظهر دانة، وانطلقتا معًا — تتمايلان يمينًا ويسارًا — فوق كثيبٍ بعد كثيب، تاركتين خلفهما خطًا متعرجًا من الآثار على الرمل.`}) },
+  { prompt:"A majestic falcon flies low in front of the character and the camel, wings spread wide, pointing the way with its flight; the character points forward excitedly from the camel's back; late afternoon golden light.",
+    en:n=>({text:`A falcon swooped down and circled three times. "Follow me!" it cried. "The oasis hides where the two tallest dunes meet!" ${n}'s eyes grew wide with excitement.`}),
+    ar:(n,g)=>({text:`انقضّ صقرٌ من السماء ودار ثلاث دورات. صاح الصقر: "اتبعاني! الواحة تختبئ حيث يلتقي أطول كثيبين!" اتسعت عينا ${n} من الحماس.`}) },
+  { prompt:"A beautiful hidden oasis between two tall dunes: palm trees with hanging dates, a clear turquoise pool; the character kneels at the water's edge splashing joyfully while the camel drinks; a falcon perched on a palm tree.",
+    en:n=>({text:`And there it was — the secret oasis! Palm trees heavy with dates, cool blue water sparkling like treasure. "We found it!" cheered ${n}, splashing happy little splashes.`}),
+    ar:(n,g)=> g==="boy"
+     ? ({text:`وها هي — الواحة السرية! نخيلٌ مليء بالتمر، وماءٌ أزرق باردٌ يلمع كالكنز. هتف ${n}: "وجدناها!" وهو يرشّ الماء رشّاتٍ صغيرةً بسعادة.`})
+     : ({text:`وها هي — الواحة السرية! نخيلٌ مليء بالتمر، وماءٌ أزرق باردٌ يلمع كالكنز. هتفت ${n}: "وجدناها!" وهي ترشّ الماء رشّاتٍ صغيرةً بسعادة.`}) },
+  { prompt:"Cozy night scene: the character sits cross-legged by a small campfire near the oasis, holding a small tea cup, the camel resting beside them, a teapot on the fire, brilliant starry sky with the Milky Way overhead.",
+    en:n=>({text:`When the sun set, they built a small campfire. They ate sweet dates and drank warm tea while the sky filled with a thousand and one stars. "The desert is magic," whispered ${n}.`}),
+    ar:(n,g)=> g==="boy"
+     ? ({text:`وعند غروب الشمس، أشعلوا نارًا صغيرة. أكلوا التمر الحلو وشربوا الشاي الدافئ بينما امتلأت السماء بألفِ نجمةٍ ونجمة. همس ${n}: "الصحراء سحر."`})
+     : ({text:`وعند غروب الشمس، أشعلوا نارًا صغيرة. أكلوا التمر الحلو وشربوا الشاي الدافئ بينما امتلأت السماء بألفِ نجمةٍ ونجمة. همست ${n}: "الصحراء سحر."`}) },
+  { prompt:"The character tucked into a small open tent with a cozy blanket, eyes sleepy and smiling, the camel curled up just outside, dying embers of the campfire, vast peaceful starry desert night.",
+    en:n=>({text:`Snuggled in a little tent, ${n} yawned a big explorer's yawn. "Tomorrow," ${n} whispered to Dana, "let's find another adventure." And the desert stars twinkled goodnight. The End ⭐`}),
+    ar:(n,g)=> g==="boy"
+     ? ({text:`وفي خيمةٍ صغيرةٍ دافئة، تثاءب ${n} تثاؤب المستكشفين الكبار. همس ${n} لدانة: "لنبحث غدًا عن مغامرةٍ جديدة." ولمعت نجوم الصحراء لتقول: تصبح على خير. النهاية ⭐`})
+     : ({text:`وفي خيمةٍ صغيرةٍ دافئة، تثاءبت ${n} تثاؤب المستكشفين الكبار. همست ${n} لدانة: "لنبحث غدًا عن مغامرةٍ جديدة." ولمعت نجوم الصحراء لتقول: تصبحين على خير. النهاية ⭐`}) },
+  ]
+},
+
+/* ---------------- SPACE 🚀 ---------------- */
+space: {
+  icon:"🚀",
+  name:{en:"Space Adventure",ar:"مغامرة الفضاء"},
+  tag:{en:"A silver rocket, planets & the Star Garden",ar:"صاروخ فضي وكواكب وحديقة النجوم"},
+  outfit:"Dress the character in a child-sized astronaut suit, white with orange accents and mission patches, with the helmet carried under one arm so the hair and full face stay clearly visible.",
+  palette:"deep blue and purple starry space palette with soft glowing accents",
+  fun:{
+    en:["Polishing the planets… 🪐","Teaching Bolt the robot to beep… 🤖","Sprinkling stardust everywhere… ✨","Warming up the rocket engines… 🚀","Painting the Milky Way… 🌌","Baking moon cookies… 🍪"],
+    ar:["نلمّع الكواكب… 🪐","نعلّم الروبوت برق أن يصفّر… 🤖","ننثر غبار النجوم في كل مكان… ✨","نسخّن محركات الصاروخ… 🚀","نرسم درب التبّانة… 🌌","نخبز كعك القمر… 🍪"]
+  },
+  story:[
+  { prompt:"The character in an astronaut suit stands proudly beside a small friendly silver rocket at night, glowing moon and brilliant stars above, gentle hill landscape.",
+    en:n=>({title:`${n}'s Space Adventure`, text:"A story starring a very brave astronaut."}),
+    ar:(n,g)=>({title:`مغامرة ${n} في الفضاء`, text: g==="boy"?"قصة بطلها رائد فضاء شجاع جدًا.":"قصة بطلتها رائدة فضاء شجاعة جدًا."}) },
+  { prompt:"The character in an astronaut suit stands in a garden at night looking up amazed at a small friendly silver rocket with round windows parked behind a garden shed, glowing stars above.",
+    en:n=>({text:`One clear night, ${n} looked up at the twinkling stars. Behind the garden shed stood a little silver rocket, humming softly. "Hello, ${n}!" beeped the rocket. "The stars are waiting!"`}),
+    ar:(n,g)=> g==="boy"
+     ? ({text:`في ليلةٍ صافية، نظر ${n} إلى النجوم المتلألئة. وخلف حديقة البيت وقف صاروخٌ فضيٌّ صغيرٌ يطنّ بهدوء. قال الصاروخ: "مرحبًا يا ${n}! النجوم بانتظارك!"`})
+     : ({text:`في ليلةٍ صافية، نظرت ${n} إلى النجوم المتلألئة. وخلف حديقة البيت وقف صاروخٌ فضيٌّ صغيرٌ يطنّ بهدوء. قال الصاروخ: "مرحبًا يا ${n}! النجوم بانتظارك!"`}) },
+  { prompt:"The character inside a cozy rocket cockpit, hands on the controls, a big round window showing Earth shrinking below, stars streaking past, excited happy face.",
+    en:n=>({text:`${n} climbed inside and buckled up tight. "3… 2… 1… liftoff!" WHOOSH! The rocket zoomed up, up, up — past the clouds, past the moonbeams, into the sparkling dark.`}),
+    ar:(n,g)=> g==="boy"
+     ? ({text:`ركب ${n} الصاروخ وربط الحزام جيدًا. "٣… ٢… ١… انطلاق!" ووووش! انطلق الصاروخ عاليًا عاليًا — فوق الغيوم، وفوق أشعة القمر، نحو النجوم المتلألئة في الظلام.`})
+     : ({text:`ركبت ${n} الصاروخ وربطت الحزام جيدًا. "٣… ٢… ١… انطلاق!" ووووش! انطلق الصاروخ عاليًا عاليًا — فوق الغيوم، وفوق أشعة القمر، نحو النجوم المتلألئة في الظلام.`}) },
+  { prompt:"A cute small floating robot with friendly glowing eyes and blinking lights waves at the character through space, a colorful nebula glowing behind them.",
+    en:n=>({text:`On the way, a little robot floated by, blinking friendly lights. "Hi! I'm Bolt," it beeped. "Are you looking for the Glowing Star Garden? Follow me — I know the way!"`}),
+    ar:(n,g)=> g==="boy"
+     ? ({text:`وفي الطريق، مرّ روبوتٌ صغيرٌ يطفو وتومض أضواؤه بلطف. قال الروبوت: "مرحبًا! أنا برق. هل تبحث عن حديقة النجوم المضيئة؟ اتبعني — أنا أعرف الطريق!"`})
+     : ({text:`وفي الطريق، مرّ روبوتٌ صغيرٌ يطفو وتومض أضواؤه بلطف. قال الروبوت: "مرحبًا! أنا برق. هل تبحثين عن حديقة النجوم المضيئة؟ اتبعيني — أنا أعرف الطريق!"`}) },
+  { prompt:"The character floats in space waving happily at colorful planets — a red planet, a ringed planet, a purple stormy planet — with the small friendly robot floating beside them.",
+    en:n=>({text:`They flew past a red planet, a ringed planet, and a planet with purple storms. ${n} waved at every single one. "Hello, planets!" laughed ${n}, doing a slow somersault in the floaty air.`}),
+    ar:(n,g)=> g==="boy"
+     ? ({text:`طارا معًا قرب كوكبٍ أحمر، وكوكبٍ ذي حلقات، وكوكبٍ بعواصفَ بنفسجية. لوّح ${n} لكل واحدٍ منها. ضحك ${n} وهو يدور دورةً بطيئةً في الفضاء: "مرحبًا أيتها الكواكب!"`})
+     : ({text:`طارا معًا قرب كوكبٍ أحمر، وكوكبٍ ذي حلقات، وكوكبٍ بعواصفَ بنفسجية. لوّحت ${n} لكل واحدٍ منها. ضحكت ${n} وهي تدور دورةً بطيئةً في الفضاء: "مرحبًا أيتها الكواكب!"`}) },
+  { prompt:"A bright shooting star streaks across space leaving a golden sparkle trail; the character and the small robot chase after it excitedly, a big cratered glowing moon ahead.",
+    en:n=>({text:`A shooting star whooshed past and left a trail of golden sparkles. "Follow the sparkles!" beeped Bolt. "The Star Garden hides behind the sleepy old moon!" ${n}'s eyes grew wide with excitement.`}),
+    ar:(n,g)=> g==="boy"
+     ? ({text:`مرّ شهابٌ سريعٌ وترك خلفه أثرًا من الشرر الذهبي. قال برق: "اتبع الشرر! حديقة النجوم تختبئ خلف القمر العجوز النعسان!" اتسعت عينا ${n} من الحماس.`})
+     : ({text:`مرّ شهابٌ سريعٌ وترك خلفه أثرًا من الشرر الذهبي. قال برق: "اتبعي الشرر! حديقة النجوم تختبئ خلف القمر العجوز النعسان!" اتسعت عينا ${n} من الحماس.`}) },
+  { prompt:"A magical hidden garden on the far side of the moon filled with hundreds of small glowing stars like flowers of light; the character kneels gently holding one tiny glowing star, the small robot hovering nearby in wonder.",
+    en:n=>({text:`And there it was — the Glowing Star Garden! Hundreds of baby stars twinkling like flowers of light. "We found it!" cheered ${n}, gently holding a tiny star that purred like a kitten.`}),
+    ar:(n,g)=> g==="boy"
+     ? ({text:`وها هي — حديقة النجوم المضيئة! وبها مئات النجوم الصغيرة التي تتلألأ كأزهارٍ من نور. هتف ${n}: "وجدناها!" وهو يحمل بلطفٍ نجمةً صغيرةً تخرخر كقطةٍ صغيرة.`})
+     : ({text:`وها هي — حديقة النجوم المضيئة! وبها مئات النجوم الصغيرة التي تتلألأ كأزهارٍ من نور. هتفت ${n}: "وجدناها!" وهي تحمل بلطفٍ نجمةً صغيرةً تخرخر كقطةٍ صغيرة.`}) },
+  { prompt:"Cozy scene: the character and the small robot share a floating picnic among glowing stars, cookies and a juice box drifting in the air, Earth visible far away as a small blue marble.",
+    en:n=>({text:`They had a floating picnic among the stars — space juice and moon cookies — while Earth glowed far away like a little blue marble. "Space is magic," whispered ${n}.`}),
+    ar:(n,g)=> g==="boy"
+     ? ({text:`أقاموا نزهةً ممتعةً بين النجوم — وتناولوا عصير الفضاء وكعك القمر — بينما لمعت الأرض من بعيدٍ ككرةٍ زرقاءَ صغيرة. همس ${n}: "الفضاء سحر."`})
+     : ({text:`أقاموا نزهةً ممتعةً بين النجوم — وتناولوا عصير الفضاء وكعك القمر — بينما لمعت الأرض من بعيدٍ ككرةٍ زرقاءَ صغيرة. همست ${n}: "الفضاء سحر."`}) },
+  { prompt:"The character tucked into bed by a window at night, sleepy and smiling, a small silver rocket parked in the garden below, one star twinkling extra bright outside the window, peaceful.",
+    en:n=>({text:`Back home, ${n} snuggled into bed, still smiling. Outside the window, one little star twinkled extra bright. "Same time tomorrow?" it seemed to say. "Definitely," whispered ${n}. The End ⭐`}),
+    ar:(n,g)=> g==="boy"
+     ? ({text:`وفي البيت، تدثّر ${n} في سريره وهو ما يزال يبتسم. وخلف النافذة، لمعت نجمةٌ صغيرةٌ لمعانًا أقوى، وكأنها تقول: "غدًا في الموعد نفسه؟" همس ${n}: "أكيد." النهاية ⭐`})
+     : ({text:`وفي البيت، تدثّرت ${n} في سريرها وهي ما تزال تبتسم. وخلف النافذة، لمعت نجمةٌ صغيرةٌ لمعانًا أقوى، وكأنها تقول: "غدًا في الموعد نفسه؟" همست ${n}: "أكيد." النهاية ⭐`}) },
+  ]
+},
+
+/* ---------------- OCEAN 🐠 ---------------- */
+ocean: {
+  icon:"🐠",
+  name:{en:"Ocean Adventure",ar:"مغامرة أعماق البحر"},
+  tag:{en:"A dolphin friend, corals & a hidden pearl",ar:"دلفينة لطيفة ومرجان ولؤلؤة مخفية"},
+  outfit:"Dress the character in a colorful swim shirt and shorts, bright flippers, and a diving mask pushed up on the forehead so the hair and full face stay clearly visible.",
+  palette:"bright turquoise and coral underwater palette with soft sun rays through the water",
+  fun:{
+    en:["Blowing silvery bubbles… 🫧","Teaching Lulu the dolphin new tricks… 🐬","Polishing the hidden pearl… 🦪","Combing the sea plants… 🌿","Inviting the fish to the party… 🐟","Tuning the singing cave… 🎵"],
+    ar:["ننفخ فقاقيعَ فضية… 🫧","نعلّم الدلفينة لولو حركاتٍ جديدة… 🐬","نلمّع اللؤلؤة المخفية… 🦪","نمشّط نباتات البحر… 🌿","ندعو الأسماك إلى الحفلة… 🐟","نضبط أنغام الكهف المغنّي… 🎵"]
+  },
+  story:[
+  { prompt:"The character in snorkel gear stands proudly on a sunny golden beach, bright turquoise sea behind with small fish jumping, palm tree at the side, cheerful sky.",
+    en:n=>({title:`${n}'s Ocean Adventure`, text:"A story starring a very brave diver."}),
+    ar:(n,g)=>({title:`مغامرة ${n} في أعماق البحر`, text: g==="boy"?"قصة بطلها غوّاصٌ شجاعٌ جدًا.":"قصة بطلتها غوّاصةٌ شجاعةٌ جدًا."}) },
+  { prompt:"The character stands at the water's edge on a golden beach adjusting a diving mask, colorful flippers on, gentle waves and a bright sparkling turquoise sea, morning light.",
+    en:n=>({text:`One sunny morning, ${n} put on a diving mask and bright flippers and looked out at the sparkling blue sea. "Today," said ${n}, "I'm going to find the hidden pearl!"`}),
+    ar:(n,g)=> g==="boy"
+     ? ({text:`في صباحٍ مشمس، لبس ${n} نظّارة الغوص والزعانف الملوّنة ونظر إلى البحر الأزرق المتلألئ. قال ${n}: "اليوم سأجد اللؤلؤة المخفية!"`})
+     : ({text:`في صباحٍ مشمس، لبست ${n} نظّارة الغوص والزعانف الملوّنة ونظرت إلى البحر الأزرق المتلألئ. قالت ${n}: "اليوم سأجد اللؤلؤة المخفية!"`}) },
+  { prompt:"The character dives underwater surrounded by silvery bubbles, a colorful coral reef below in pink orange and purple like an underwater garden, sun rays shining through the water.",
+    en:n=>({text:`SPLASH! Down, down, down ${n} dove, blowing silvery bubbles, until a world of colorful coral appeared — pink, orange and purple, like an underwater garden.`}),
+    ar:(n,g)=> g==="boy"
+     ? ({text:`سبلاش! غاص ${n} عميقًا عميقًا وهو ينفث فقاقيعَ فضية، حتى وجد عالمًا من المرجان الملوّن — ورديٌّ وبرتقاليٌّ وبنفسجي، مثل حديقةٍ تحت الماء.`})
+     : ({text:`سبلاش! غاصت ${n} عميقًا عميقًا وهي تنفث فقاقيعَ فضية، حتى وجدت عالمًا من المرجان الملوّن — ورديٌّ وبرتقاليٌّ وبنفسجي، مثل حديقةٍ تحت الماء.`}) },
+  { prompt:"A friendly smiling dolphin with kind eyes greets the character among colorful corals, small curious fish watching, warm underwater light.",
+    en:n=>({text:`Between the corals swam a dolphin with kind eyes and a big smile. "Hello! I'm Lulu," she clicked. "Are you looking for the hidden pearl? Hop on my back — I know the way!"`}),
+    ar:(n,g)=> g==="boy"
+     ? ({text:`وبين المرجان سبحت دلفينةٌ بعينين لطيفتين وابتسامةٍ كبيرة. قالت الدلفينة: "مرحبًا! أنا لولو. هل تبحث عن اللؤلؤة المخفية؟ اركب على ظهري — أنا أعرف الطريق!"`})
+     : ({text:`وبين المرجان سبحت دلفينةٌ بعينين لطيفتين وابتسامةٍ كبيرة. قالت الدلفينة: "مرحبًا! أنا لولو. هل تبحثين عن اللؤلؤة المخفية؟ اركبي على ظهري — أنا أعرف الطريق!"`}) },
+  { prompt:"The character rides on the dolphin's back gliding through clear water, waving sea plants, a swirling school of tiny golden fish around them, joyful motion.",
+    en:n=>({text:`${n} held on gently, and off they glided — swish, swish — past waving sea plants and schools of tiny golden fish that tickled ${n}'s toes.`}),
+    ar:(n,g)=> g==="boy"
+     ? ({text:`أمسك ${n} بلطف، وانطلقا معًا — سويش سويش — بين نباتات البحر المتمايلة وأسرابِ سمكٍ ذهبيٍّ صغيرٍ يدغدغ أصابع قدميه.`})
+     : ({text:`أمسكت ${n} بلطف، وانطلقتا معًا — سويش سويش — بين نباتات البحر المتمايلة وأسرابِ سمكٍ ذهبيٍّ صغيرٍ يدغدغ أصابع قدميها.`}) },
+  { prompt:"A wise old sea turtle gestures with a flipper, leading the character riding the dolphin toward a mysterious glowing underwater cave entrance in the distance.",
+    en:n=>({text:`A wise old sea turtle waved a flipper. "Follow me!" she said slowly. "The pearl sleeps inside the singing cave, where the water glows!" ${n}'s eyes grew wide with excitement.`}),
+    ar:(n,g)=>({text:`لوّحت سلحفاةُ بحرٍ عجوزٌ حكيمةٌ بزعنفتها وقالت بهدوء: "اتبعاني! اللؤلؤة نائمةٌ داخل الكهف المغنّي، حيث يتوهّج الماء!" اتسعت عينا ${n} من الحماس.`}) },
+  { prompt:"Inside a magical glowing underwater cave, soft blue light dancing on the walls, a large beautiful pearl resting on a golden shell in the center; the character reaches toward it in wonder, the dolphin beside them.",
+    en:n=>({text:`And there it was — the singing cave! Soft blue light danced on the walls, and in the middle, on a golden shell, glowed the most beautiful pearl. "We found it!" cheered ${n}.`}),
+    ar:(n,g)=> g==="boy"
+     ? ({text:`وها هو — الكهف المغنّي! ضوءٌ أزرقُ ناعمٌ يرقص على الجدران، وفي الوسط، فوق صدفةٍ ذهبية، توهّجت أجملُ لؤلؤة. هتف ${n}: "وجدناها!"`})
+     : ({text:`وها هو — الكهف المغنّي! ضوءٌ أزرقُ ناعمٌ يرقص على الجدران، وفي الوسط، فوق صدفةٍ ذهبية، توهّجت أجملُ لؤلؤة. هتفت ${n}: "وجدناها!"`}) },
+  { prompt:"A joyful underwater celebration: the character dances with colorful fish of every color, a friendly dancing octopus, and tiny seahorses around a big coral, bubbles and sparkles everywhere.",
+    en:n=>({text:`All the sea friends came to celebrate — fish in every color, a dancing octopus, and tiny seahorses. They played ring-around-the-coral until the water sparkled with laughter.`}),
+    ar:(n,g)=>({text:`جاء كل أصدقاء البحر للاحتفال — أسماكٌ بكل الألوان، وأخطبوطٌ راقص، وأحصنةُ بحرٍ صغيرة. لعبوا حول المرجان حتى تلألأ الماء بالضحكات.`}) },
+  { prompt:"Sunset beach scene: the character stands in shallow water hugging the dolphin goodbye, warm orange sky, gentle sparkling waves, peaceful and cozy.",
+    en:n=>({text:`At sunset, Lulu carried ${n} back to the shore. "Same time tomorrow?" she clicked softly. "Definitely," yawned ${n}, hugging her goodbye. And the waves whispered goodnight. The End 🌙`}),
+    ar:(n,g)=> g==="boy"
+     ? ({text:`وعند الغروب، أعادت لولو ${n} إلى الشاطئ. قالت بهدوء: "غدًا في الموعد نفسه؟" تثاءب ${n} وهو يعانقها مودّعًا: "أكيد." وهمست الأمواج: تصبح على خير. النهاية 🌙`})
+     : ({text:`وعند الغروب، أعادت لولو ${n} إلى الشاطئ. قالت بهدوء: "غدًا في الموعد نفسه؟" تثاءبت ${n} وهي تعانقها مودّعةً: "أكيد." وهمست الأمواج: تصبحين على خير. النهاية 🌙`}) },
+  ]
+}
+};
+
+/* ==================== UI STRINGS ==================== */
+const T = {
+en:{
+  kicker:"Little Explorer",
+  codeTitle:"Enter your magic code", codeSub:"You received it with your purchase.",
+  codeLabel:"Access code", codeBtn:"Unlock ✨",
+  codeChecking:"Checking…", codeBad:"Hmm, that code wasn't found. Please check the spelling.",
+  codeEmpty:"This code has no image credits left.",
+  themeTitle:"Choose your adventure", themeSub:"Every story stars your child as the hero.",
+  resumeFound:"📖 A saved book was found on this device:", resumeOpen:"Open my saved book",
+  resumeNew:"…or start a new adventure below (this will replace the saved one):",
+  resumeConfirm:"Starting a new adventure will REPLACE your saved book:\n\n{BOOK}\n\nContinue?",
+  setupTitle:"Tell us about your hero", setupSub:"Name, and one nice clear photo of the face.",
+  nameLabel:"Child's name (as it should appear in the story)",
+  genderLabel:"The story's hero is a…", boy:"Boy 👦", girl:"Girl 👧",
+  photoLabel:"Photo", photoTitle:"Tap to choose a photo", photoHint:"a clear, well-lit face works best",
+  photoTips:"💡 Best results: front-facing photo, good light, face large in the frame.",
+  privacy:"🔒 The photo is used only to create the storybook character and is not stored by us.",
+  setupBtn:"Create my explorer! 🎨",
+  charTitle:"Meet your explorer!", charSub:"We turned the photo into a storybook character.",
+  charApprove:"Perfect! Make the book 📖", charRetry:"Try again 🔄",
+  charWorking:["Mixing the paint colors…","Sketching your explorer…","Adding the finishing touches…","Almost ready…"],
+  genTitle:"Painting your story…", genSub:"This takes a few minutes — every page is painted just for you. Please keep this page open.",
+  genPage:"Painting page", genOf:"of",
+  genErr:"Page generation hit a problem: ", genRetry:"Continue where we stopped ▶",
+  bookTitle:"Your book is ready! 🎉", bookSub:"Flip through it, then download the PDF to keep and print.",
+  back:"← Back", next:"Turn the page →", theEnd:"The End 🌙",
+  regenPage:"🔄 Repaint this page", pdf:"⬇ Download PDF",
+  pdfWorking:"Building your PDF…",
+  page:"Page", credits:"image credits left",
+  netErr:"Could not reach the server. Check your internet and try again."
+},
+ar:{
+  kicker:"المستكشف الصغير",
+  codeTitle:"أدخل الرمز السحري", codeSub:"وصلك الرمز مع عملية الشراء.",
+  codeLabel:"رمز الدخول", codeBtn:"افتح ✨",
+  codeChecking:"جارٍ التحقق…", codeBad:"لم نجد هذا الرمز. تأكد من كتابته بشكل صحيح.",
+  codeEmpty:"لا يحتوي هذا الرمز على رصيد صور.",
+  themeTitle:"اختر مغامرتك", themeSub:"في كل قصة، طفلك هو البطل.",
+  resumeFound:"📖 يوجد كتاب محفوظ على هذا الجهاز:", resumeOpen:"افتح كتابي المحفوظ",
+  resumeNew:"…أو ابدأ مغامرة جديدة من الأسفل (ستحلّ محل الكتاب المحفوظ):",
+  resumeConfirm:"بدء مغامرة جديدة سيحلّ محل كتابك المحفوظ:\n\n{BOOK}\n\nهل تريد المتابعة؟",
+  setupTitle:"أخبرنا عن بطل القصة", setupSub:"الاسم، وصورة واضحة للوجه.",
+  nameLabel:"اسم الطفل (كما سيظهر في القصة)",
+  genderLabel:"بطل القصة…", boy:"ولد 👦", girl:"بنت 👧",
+  photoLabel:"الصورة", photoTitle:"اضغط لاختيار صورة", photoHint:"صورة واضحة وبإضاءة جيدة للوجه",
+  photoTips:"💡 لأفضل نتيجة: صورة أمامية، بإضاءة جيدة، والوجه يملأ الصورة.",
+  privacy:"🔒 تُستخدم الصورة فقط لإنشاء شخصية القصة ولا نقوم بتخزينها.",
+  setupBtn:"ارسم مستكشفي! 🎨",
+  charTitle:"تعرّف على مستكشفك!", charSub:"حوّلنا الصورة إلى شخصية كرتونية للقصة.",
+  charApprove:"رائع! اصنع الكتاب 📖", charRetry:"حاول مرة أخرى 🔄",
+  charWorking:["نخلط ألوان الرسم…","نرسم ملامح المستكشف…","نضيف اللمسات الأخيرة…","اقتربنا…"],
+  genTitle:"نرسم قصتك الآن…", genSub:"يستغرق هذا بضع دقائق — كل صفحة تُرسم خصيصًا لك. من فضلك أبقِ الصفحة مفتوحة.",
+  genPage:"نرسم الصفحة", genOf:"من",
+  genErr:"حدثت مشكلة أثناء رسم الصفحة: ", genRetry:"أكمل من حيث توقفنا ▶",
+  bookTitle:"كتابك جاهز! 🎉", bookSub:"تصفّحه ثم حمّل ملف PDF للاحتفاظ به وطباعته.",
+  back:"→ السابق", next:"اقلب الصفحة ←", theEnd:"النهاية 🌙",
+  regenPage:"🔄 أعد رسم هذه الصفحة", pdf:"⬇ تحميل PDF",
+  pdfWorking:"نجهّز ملف PDF…",
+  page:"صفحة", credits:"رصيد الصور المتبقي",
+  netErr:"تعذّر الوصول إلى الخادم. تحقق من الإنترنت وحاول مجددًا."
+}};
+
+/* ==================== STATE ==================== */
+const S = {
+  lang:"en", code:"", credits:0, name:"", gender:null, theme:null,
+  photo:null, character:null,
+  pages:[], genIndex:0, page:0, busy:false
+};
+const $=id=>document.getElementById(id);
+const t=k=>T[S.lang][k];
+const story=()=>THEMES[S.theme].story;
+
+/* ==================== LANGUAGE ==================== */
+window.setLang = function(l){
+  S.lang=l;
+  document.documentElement.lang = l==="ar"?"ar":"en";
+  document.documentElement.dir  = l==="ar"?"rtl":"ltr";
+  document.querySelectorAll("[data-t]").forEach(el=>{
+    const k=el.getAttribute("data-t");
+    if(T[l][k]) el.textContent=T[l][k];
+  });
+  show("s-code");
+};
+
+function show(id){
+  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("on"));
+  $(id).classList.add("on");
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+function updCredits(){
+  const line="💳 "+S.credits+" "+t("credits");
+  ["creditsLine1","creditsLine2","creditsLine3"].forEach(i=>$(i).textContent=line);
+}
+
+/* ==================== LOCAL SAVE (IndexedDB) ==================== */
+function idbOpen(){
+  return new Promise((res,rej)=>{
+    const r=indexedDB.open("little-explorer",1);
+    r.onupgradeneeded=()=>r.result.createObjectStore("books");
+    r.onsuccess=()=>res(r.result);
+    r.onerror=()=>rej(r.error);
+  });
+}
+async function idbSet(k,v){
+  const d=await idbOpen();
+  return new Promise((res,rej)=>{
+    const tx=d.transaction("books","readwrite");
+    tx.objectStore("books").put(v,k);
+    tx.oncomplete=res; tx.onerror=()=>rej(tx.error);
+  });
+}
+async function idbGet(k){
+  const d=await idbOpen();
+  return new Promise((res,rej)=>{
+    const q=d.transaction("books","readonly").objectStore("books").get(k);
+    q.onsuccess=()=>res(q.result); q.onerror=()=>rej(q.error);
+  });
+}
+async function saveBook(){
+  if(!S.code||!S.theme) return;
+  try{
+    await idbSet(S.code,{lang:S.lang,theme:S.theme,name:S.name,gender:S.gender,
+      character:S.character,pages:S.pages,ts:Date.now()});
+  }catch(e){/* storage full or unavailable — the app still works, just without resume */}
+}
+
+/* ==================== API ==================== */
+async function api(path,payload){
+  const r=await fetch(WORKER_URL+path,{
+    method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify(payload)
+  });
+  return r.json();
+}
+async function generateImage(refDataURL,prompt){
+  const data=await api("/generate",{code:S.code,photo:refDataURL,prompt});
+  if(data.error) throw new Error(data.error);
+  S.credits=data.credits; updCredits();
+  return "data:image/png;base64,"+data.image;
+}
+
+/* ==================== SCREEN 1: CODE ==================== */
+window.checkCode = async function(){
+  const n=$("codeNotice"); n.className="notice";
+  const code=$("codeInput").value.trim().toUpperCase();
+  if(!code) return;
+  $("codeBtn").disabled=true; $("codeBtn").textContent=t("codeChecking");
+  try{
+    const data=await api("/check",{code});
+    if(!data.valid){ n.className="notice err"; n.textContent=t("codeBad"); }
+    else if(data.credits<=0){ n.className="notice err"; n.textContent=t("codeEmpty"); }
+    else{
+      S.code=code; S.credits=data.credits; updCredits();
+      try{ S.saved=await idbGet(code)||null; }catch(e){ S.saved=null; }
+      renderThemePicker();
+      show("s-theme");
+    }
+  }catch(e){ n.className="notice err"; n.textContent=t("netErr"); }
+  $("codeBtn").disabled=false; $("codeBtn").textContent=t("codeBtn");
+};
+
+/* ==================== SCREEN 2: THEME ==================== */
+function renderThemePicker(){
+  const box=$("themePick");
+  box.innerHTML="";
+  if(S.saved && S.saved.character){
+    const done=S.saved.pages.filter(Boolean).length, total=S.saved.pages.length;
+    const th=THEMES[S.saved.theme];
+    const wrap=document.createElement("div");
+    wrap.style.cssText="grid-column:1/-1;text-align:center";
+    wrap.innerHTML='<p style="font-weight:800;margin-bottom:10px">'+t("resumeFound")+" "+
+      th.icon+" "+th.name[S.saved.lang]+" — "+escStr(S.saved.name)+
+      (done<total?" ("+done+"/"+total+")":"")+'</p>';
+    const b=document.createElement("button");
+    b.className="btn"; b.textContent=t("resumeOpen");
+    b.onclick=resumeSaved;
+    wrap.appendChild(b);
+    const hint=document.createElement("p");
+    hint.style.cssText="font-weight:700;font-size:.85rem;color:var(--ink-soft);margin-top:12px";
+    hint.textContent=t("resumeNew");
+    wrap.appendChild(hint);
+    box.appendChild(wrap);
+  }
+  Object.entries(THEMES).forEach(([id,th])=>{
+    const b=document.createElement("button");
+    b.innerHTML='<span class="ticon">'+th.icon+'</span>'+th.name[S.lang]+
+      '<small>'+th.tag[S.lang]+'</small>';
+    b.onclick=()=>{ pickTheme(id); };
+    box.appendChild(b);
+  });
+}
+function escStr(x){return String(x).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+window.resumeSaved=function(){
+  const sv=S.saved;
+  if(!sv) return;
+  if(sv.lang!==S.lang) setLangSilent(sv.lang);
+  S.theme=sv.theme; S.name=sv.name; S.gender=sv.gender;
+  S.character=sv.character; S.pages=sv.pages.slice();
+  const missing=S.pages.findIndex(p=>!p);
+  if(missing===-1){
+    S.page=0; renderBook(); show("s-book");
+  } else {
+    show("s-gen"); buildThumbRow();
+    S.genIndex=missing; runGeneration();
+  }
+};
+function setLangSilent(l){
+  S.lang=l;
+  document.documentElement.lang=l==="ar"?"ar":"en";
+  document.documentElement.dir=l==="ar"?"rtl":"ltr";
+  document.querySelectorAll("[data-t]").forEach(el=>{
+    const k=el.getAttribute("data-t");
+    if(T[l][k]) el.textContent=T[l][k];
+  });
+  updCredits();
+}
+function pickTheme(id){
+  if(S.saved && S.saved.character){
+    const th=THEMES[S.saved.theme];
+    const done=S.saved.pages.filter(Boolean).length, total=S.saved.pages.length;
+    const desc=th.icon+" "+th.name[S.saved.lang]+" — "+S.saved.name+(done<total?" ("+done+"/"+total+")":"");
+    if(!confirm(t("resumeConfirm").replace("{BOOK}",desc))) return;
+    S.saved=null;
+  }
+  S.theme=id;
+  S.pages=new Array(THEMES[id].story.length).fill(null);
+  S.character=null;
+  show("s-setup");
+}
+
+/* ==================== SCREEN 3: SETUP ==================== */
+$("genderPills").addEventListener("click",e=>{
+  const b=e.target.closest("button"); if(!b) return;
+  document.querySelectorAll("#genderPills button").forEach(x=>x.classList.remove("on"));
+  b.classList.add("on"); S.gender=b.dataset.g; validateSetup();
+});
+$("kidName").addEventListener("input",validateSetup);
+$("dropZone").addEventListener("click",()=>$("fileInput").click());
+$("fileInput").addEventListener("change",async ()=>{
+  const f=$("fileInput").files[0]; if(!f) return;
+  if(!f.type.startsWith("image/")) return;
+  S.photo=await downscale(f,1024);
+  $("thumb").src=S.photo; $("thumb").style.display="block";
+  validateSetup();
+});
+async function downscale(file,maxSide){
+  let bmp;
+  try{ bmp=await createImageBitmap(file,{imageOrientation:"from-image"}); }
+  catch(e){
+    bmp=await new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=URL.createObjectURL(file);});
+  }
+  const w=bmp.width||bmp.naturalWidth,h=bmp.height||bmp.naturalHeight;
+  const k=Math.min(1,maxSide/Math.max(w,h));
+  const c=document.createElement("canvas");
+  c.width=Math.round(w*k);c.height=Math.round(h*k);
+  const ctx=c.getContext("2d"); ctx.imageSmoothingQuality="high";
+  ctx.drawImage(bmp,0,0,c.width,c.height);
+  return c.toDataURL("image/jpeg",0.87);
+}
+function validateSetup(){
+  S.name=$("kidName").value.trim();
+  $("setupBtn").disabled=!(S.name && S.gender && S.photo);
+}
+
+/* ==================== SCREEN 4: CHARACTER ==================== */
+let charMsgTimer=null;
+window.startCharacter=function(){ show("s-char"); makeCharacter(); };
+
+function characterPrompt(){
+  return CHAR_BASE
+    .replace("{GENDER}", S.gender==="boy"?"boy":"girl")
+    .replace("{OUTFIT}", THEMES[S.theme].outfit);
+}
+function sceneSuffix(){
+  return SUFFIX_BASE.replace("{PALETTE}", THEMES[S.theme].palette);
+}
+
+async function makeCharacter(){
+  if(S.busy) return; S.busy=true;
+  $("charImg").style.display="none";
+  $("charActions").style.display="none";
+  $("charNotice").className="notice";
+  $("charProgress").style.display="block";
+  animateBar("charBar",45000);
+  let mi=0;
+  $("charMsg").textContent=t("charWorking")[0];
+  charMsgTimer=setInterval(()=>{mi=(mi+1)%t("charWorking").length;$("charMsg").textContent=t("charWorking")[mi];},4000);
+  try{
+    const img=await generateImage(S.photo,characterPrompt());
+    S.character=img;
+    saveBook();
+    $("charImg").src=img; $("charImg").style.display="block";
+    $("charActions").style.display="flex";
+  }catch(e){
+    $("charNotice").className="notice err";
+    $("charNotice").textContent=(e.message||t("netErr"));
+    $("charActions").style.display="flex";
+  }
+  clearInterval(charMsgTimer);
+  $("charProgress").style.display="none";
+  S.busy=false;
+}
+window.regenCharacter=()=>makeCharacter();
+window.approveCharacter=function(){
+  show("s-gen");
+  buildThumbRow();
+  S.genIndex=0;
+  runGeneration();
+};
+
+/* ==================== SCREEN 5: GENERATION ==================== */
+let funTimer=null;
+function buildThumbRow(){
+  const row=$("thumbRow"); row.innerHTML="";
+  story().forEach((_,i)=>{
+    const d=document.createElement("div");
+    d.className="t"; d.id="thumb-"+i; d.textContent="🖌️";
+    row.appendChild(d);
+  });
+  S.pages.forEach((p,i)=>{ if(p) $("thumb-"+i).innerHTML='<img src="'+p+'">'; });
+}
+function animateBar(id,ms){
+  const bar=$(id); bar.style.transition="none"; bar.style.width="4%";
+  requestAnimationFrame(()=>{bar.style.transition="width "+ms+"ms linear";bar.style.width="92%";});
+}
+async function runGeneration(){
+  if(S.busy) return; S.busy=true;
+  $("genNotice").className="notice";
+  $("genRetryWrap").style.display="none";
+  const fun=THEMES[S.theme].fun[S.lang];
+  let fi=0;
+  clearInterval(funTimer);
+  funTimer=setInterval(()=>{fi=(fi+1)%fun.length;$("genSubMsg").textContent=fun[fi];},5000);
+  $("genSubMsg").textContent=fun[0];
+
+  const st=story();
+  for(let i=S.genIndex;i<st.length;i++){
+    S.genIndex=i;
+    $("genMsg").textContent=t("genPage")+" "+(i+1)+" "+t("genOf")+" "+st.length;
+    $("genBar").style.transition="width .6s ease";
+    $("genBar").style.width=Math.round(i/st.length*100)+"%";
+    if(S.pages[i]) continue;
+    try{
+      const img=await tryTwice(()=>generateImage(S.character, st[i].prompt+sceneSuffix()));
+      S.pages[i]=img;
+      saveBook();
+      $("thumb-"+i).innerHTML='<img src="'+img+'">';
+    }catch(e){
+      clearInterval(funTimer);
+      $("genNotice").className="notice err";
+      $("genNotice").textContent=t("genErr")+(e.message||t("netErr"));
+      $("genRetryWrap").style.display="block";
+      S.busy=false;
+      return;
+    }
+  }
+  clearInterval(funTimer);
+  $("genBar").style.width="100%";
+  S.busy=false;
+  S.page=0;
+  renderBook();
+  show("s-book");
+}
+async function tryTwice(fn){
+  try{ return await fn(); }
+  catch(e){
+    if(/credit|code/i.test(e.message)) throw e;
+    return await fn();
+  }
+}
+window.resumeGeneration=()=>runGeneration();
+
+/* ==================== SCREEN 6: BOOK ==================== */
+function esc(s){return s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+function pageText(i){
+  const sc=story()[i];
+  const fn=S.lang==="ar"?sc.ar:sc.en;
+  return fn(S.name,S.gender);
+}
+function renderBook(){
+  const st=story();
+  $("book").innerHTML=st.map((sc,i)=>{
+    const pt=pageText(i);
+    const nameHTML='<span class="kidname">'+esc(S.name)+'</span>';
+    const body=esc(pt.text).split(esc(S.name)).join(nameHTML);
+    const label=i===0?"":t("page")+" "+i;
+    return '<article class="page'+(i===S.page?" on":"")+'">'+
+      '<img class="illu" src="'+(S.pages[i]||"")+'" alt="">'+
+      '<div class="caption">'+
+        (pt.title?'<div class="booktitle">'+esc(pt.title).split(esc(S.name)).join(nameHTML)+'</div>':'')+
+        '<p>'+body+'</p>'+
+        (label?'<div class="pageno">'+label+'</div>':'')+
+      '</div></article>';
+  }).join("");
+  $("prevBtn").disabled=S.page===0;
+  $("nextBtn").disabled=S.page===st.length-1;
+  $("nextBtn").textContent=S.page===st.length-1?t("theEnd"):t("next");
+}
+$("prevBtn").addEventListener("click",()=>{if(S.page>0){S.page--;renderBook();}});
+$("nextBtn").addEventListener("click",()=>{if(S.page<story().length-1){S.page++;renderBook();}});
+
+window.regenCurrentPage=async function(){
+  if(S.busy) return; S.busy=true;
+  const i=S.page,n=$("bookNotice");
+  n.className="notice";
+  $("regenPageBtn").disabled=true;
+  $("regenPageBtn").textContent="🖌️ …";
+  try{
+    const img=await generateImage(S.character, story()[i].prompt+sceneSuffix());
+    S.pages[i]=img; saveBook(); renderBook();
+  }catch(e){ n.className="notice err"; n.textContent=(e.message||t("netErr")); }
+  $("regenPageBtn").disabled=false;
+  $("regenPageBtn").textContent=t("regenPage");
+  S.busy=false;
+};
+
+/* ==================== PDF ==================== */
+window.downloadPDF=async function(){
+  if(S.busy) return; S.busy=true;
+  const btn=$("pdfBtn"); btn.disabled=true; btn.textContent=t("pdfWorking");
+  try{
+    await document.fonts.ready;
+    const {jsPDF}=window.jspdf;
+    const pdf=new jsPDF({unit:"mm",format:"a4",orientation:"portrait"});
+    const st=story();
+    for(let i=0;i<st.length;i++){
+      if(i>0) pdf.addPage();
+      const cnv=await composePage(i);
+      pdf.addImage(cnv.toDataURL("image/jpeg",0.92),"JPEG",0,0,210,297);
+    }
+    const themeName=THEMES[S.theme].name[S.lang].replace(/\s+/g,"-");
+    const fname=(S.lang==="ar"?"قصة-":"storybook-")+S.name+"-"+themeName+".pdf";
+    pdf.save(fname);
+  }catch(e){
+    const n=$("bookNotice"); n.className="notice err"; n.textContent=e.message;
+  }
+  btn.disabled=false; btn.textContent=t("pdf");
+  S.busy=false;
+};
+
+async function composePage(i){
+  const W=1240,H=1754;
+  const c=document.createElement("canvas"); c.width=W;c.height=H;
+  const x=c.getContext("2d");
+  const ar=S.lang==="ar";
+  const dispFont=ar?"'Baloo Bhaijaan 2'":"'Fredoka'";
+  const bodyFont=ar?"'Baloo Bhaijaan 2'":"'Nunito'";
+  x.fillStyle="#FFF8EC"; x.fillRect(0,0,W,H);
+  x.fillStyle="#F5DEB0";
+  x.beginPath(); x.arc(W-90,90,140,0,7); x.fill();
+  x.beginPath(); x.arc(70,H-70,110,0,7); x.fill();
+  const img=await loadImg(S.pages[i]);
+  const iw=W-160, ix=80, iy=90;
+  roundImage(x,img,ix,iy,iw,iw,36);
+  x.strokeStyle="#fff"; x.lineWidth=10;
+  roundRectPath(x,ix,iy,iw,iw,36); x.stroke();
+  const pt=pageText(i);
+  x.textAlign="center"; x.fillStyle="#3B2A4A"; x.direction=ar?"rtl":"ltr";
+  let ty=iy+iw+110;
+  if(pt.title){
+    x.font="700 64px "+dispFont;
+    ty=wrapText(x,pt.title,W/2,ty,W-220,80);
+    ty+=30;
+  }
+  x.font="700 44px "+bodyFont;
+  wrapText(x,pt.text,W/2,ty,W-240,66);
+  if(i>0){
+    x.font="600 26px "+dispFont; x.fillStyle="#6D5C80";
+    x.fillText(t("page")+" "+i, W/2, H-56);
+  }
+  return c;
+}
+function loadImg(src){return new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=src;});}
+function roundRectPath(x,px,py,w,h,r){
+  x.beginPath();
+  x.moveTo(px+r,py); x.arcTo(px+w,py,px+w,py+h,r); x.arcTo(px+w,py+h,px,py+h,r);
+  x.arcTo(px,py+h,px,py,r); x.arcTo(px,py,px+w,py,r); x.closePath();
+}
+function roundImage(x,img,px,py,w,h,r){
+  x.save(); roundRectPath(x,px,py,w,h,r); x.clip();
+  x.drawImage(img,px,py,w,h); x.restore();
+}
+function wrapText(x,text,cx,y,maxW,lineH){
+  const words=text.split(" ");
+  let line="";
+  for(const w of words){
+    const test=line?line+" "+w:w;
+    if(x.measureText(test).width>maxW && line){
+      x.fillText(line,cx,y); y+=lineH; line=w;
+    } else line=test;
+  }
+  if(line){ x.fillText(line,cx,y); y+=lineH; }
+  return y;
+}
+
+})();
+</script>
+</body>
+</html>
