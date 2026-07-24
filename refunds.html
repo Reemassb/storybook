@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Refunds &amp; Delivery — Reema's Storybooks</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&family=Baloo+Bhaijaan+2:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#FFF8EC;--ink:#3B2A4A;--soft:#6D5C80;--blue:#3272B4;--teal:#35A7A0}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Nunito',system-ui,sans-serif;background:var(--paper);color:var(--ink);line-height:1.75}
+html[dir=rtl] body{font-family:'Baloo Bhaijaan 2',system-ui,sans-serif}
+.wrap{max-width:760px;margin:0 auto;padding:34px 20px 70px}
+h1{font-family:'Fredoka',sans-serif;font-size:1.8rem;margin-bottom:6px}
+html[dir=rtl] h1{font-family:'Baloo Bhaijaan 2',sans-serif}
+.upd{color:var(--soft);font-weight:700;font-size:.85rem;margin-bottom:26px}
+h2{font-family:'Fredoka',sans-serif;font-size:1.15rem;margin:26px 0 8px;color:var(--blue)}
+html[dir=rtl] h2{font-family:'Baloo Bhaijaan 2',sans-serif}
+p,li{font-weight:600;margin-bottom:10px}
+ul{padding-inline-start:22px}
+a{color:var(--blue)}
+.langbar{display:flex;gap:10px;justify-content:center;margin-bottom:22px}
+.langbar button{font:inherit;font-weight:800;font-size:.85rem;padding:7px 18px;border-radius:999px;
+border:2px solid rgba(59,42,74,.15);background:#fff;color:var(--soft);cursor:pointer}
+.langbar button.on{background:var(--teal);border-color:var(--teal);color:#fff}
+.en,.ar{display:none} html[lang=en] .en{display:block} html[lang=ar] .ar{display:block}
+footer{margin-top:40px;padding-top:18px;border-top:2px solid rgba(59,42,74,.1);
+color:var(--soft);font-weight:700;font-size:.85rem;text-align:center}
+footer a{margin:0 8px}
+
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="langbar">
+  <button id="btn-en" onclick="setLang('en')">English</button>
+  <button id="btn-ar" onclick="setLang('ar')">العربية</button>
+</div>
+
+<div class="en">
+<h1>Refunds &amp; Delivery</h1>
+<p class="upd">Last updated: 24 July 2026</p>
+<h2>Delivery</h2>
+<p>Delivery is instant and by email. After purchase, Gumroad emails you a licence code. You enter that code in our web app, choose your options, upload a photo, and your book is created in a few minutes. You then download it as a PDF. Nothing is posted; there are no shipping costs.</p>
+<h2>Price</h2>
+<p>The price is shown on the product page before you pay, in US dollars, processed by Gumroad.</p>
+<h2>Refunds</h2>
+<ul>
+<li>If your code has <b>not been used</b> to generate any images, you may request a full refund within 14 days of purchase.</li>
+<li>Once images have been generated, the product has been delivered and consumed, so refunds are not normally possible — real generation costs are incurred for each image.</li>
+<li>If something goes wrong technically — the app fails, credits are lost, or your book cannot be completed — contact us. We will restore your credits or refund you.</li>
+</ul>
+<h2>Problems with your book</h2>
+<p>If a page does not look right, use the spare credits included with your code to regenerate it. If you have run out and are still not happy, email us and we will usually add credits so you can finish.</p>
+<h2>How to reach us</h2>
+<p>Email <a href="mailto:reemafahmi@gmail.com">reemafahmi@gmail.com</a> or reply to your purchase email. We answer within 2 business days.</p>
+</div>
+<div class="ar">
+<h1>الاسترجاع والتسليم</h1>
+<p class="upd">آخر تحديث: ٢٤ يوليو ٢٠٢٦</p>
+<h2>التسليم</h2>
+<p>التسليم فوري وعبر البريد الإلكتروني. بعد الشراء يرسل لك Gumroad رمز ترخيص، تُدخله في تطبيقنا، وتختار التفاصيل وترفع صورة، فتُنشأ القصة خلال دقائق، ثم تحمّلها كملف PDF. لا يوجد شحن ولا رسوم توصيل.</p>
+<h2>السعر</h2>
+<p>يظهر السعر على صفحة المنتج قبل الدفع بالدولار الأمريكي، وتتم المعالجة عبر Gumroad.</p>
+<h2>الاسترجاع</h2>
+<ul>
+<li>إذا <b>لم يُستخدم</b> الرمز في توليد أي صور، يمكنك طلب استرجاع كامل خلال ١٤ يومًا من الشراء.</li>
+<li>بعد توليد الصور يكون المنتج قد سُلّم واستُهلك، فلا يمكن عادةً الاسترجاع، لأن كل صورة لها تكلفة فعلية.</li>
+<li>إذا حدث خلل تقني — تعطّل التطبيق أو ضاع الرصيد أو تعذّر إكمال القصة — تواصل معنا وسنعيد الرصيد أو المبلغ.</li>
+</ul>
+<h2>إذا لم تعجبك صفحة</h2>
+<p>استخدم الصور الإضافية المرفقة مع رمزك لإعادة رسمها. وإذا نفدت ولم تكن راضيًا بعد، راسلنا وسنضيف لك رصيدًا لإكمال القصة عادةً.</p>
+<h2>للتواصل</h2>
+<p>البريد <a href="mailto:reemafahmi@gmail.com">reemafahmi@gmail.com</a> أو الرد على بريد الشراء. نجيب خلال يومي عمل.</p>
+</div>
+
+<footer>
+  <div><b>Reema's Storybooks · قصص ريما</b> · Kuwait · <a href="mailto:reemafahmi@gmail.com">reemafahmi@gmail.com</a></div>
+  <div style="margin-top:8px">
+    <a href="privacy.html">Privacy</a>·<a href="terms.html">Terms</a>·<a href="refunds.html">Refunds &amp; Delivery</a>
+  </div>
+</footer>
+</div>
+<script>
+function setLang(l){
+  document.documentElement.lang=l;
+  document.documentElement.dir = l==="ar" ? "rtl":"ltr";
+  document.getElementById("btn-en").className = l==="en"?"on":"";
+  document.getElementById("btn-ar").className = l==="ar"?"on":"";
+}
+setLang((navigator.language||"en").startsWith("ar")?"ar":"en");
+</script>
+</body>
+</html>
