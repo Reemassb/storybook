@@ -920,23 +920,24 @@ async function composePage(i){
   x.beginPath(); x.arc(W-90,90,140,0,7); x.fill();
   x.beginPath(); x.arc(70,H-70,110,0,7); x.fill();
   const img=await loadImg(S.pages[i]);
-  const iw=W-160, ix=80, iy=90;
+  const iw=W-260, ix=130, iy=80;
   roundImage(x,img,ix,iy,iw,iw,36);
   x.strokeStyle="#fff"; x.lineWidth=10;
   roundRectPath(x,ix,iy,iw,iw,36); x.stroke();
   const pt=pageText(i);
   x.textAlign="center"; x.fillStyle="#3B2A4A"; x.direction=ar?"rtl":"ltr";
-  let ty=iy+iw+110;
+  let ty=iy+iw+90;
   if(pt.title){
-    x.font="700 64px "+dispFont;
-    ty=wrapText(x,pt.title,W/2,ty,W-220,80);
-    ty+=30;
+    x.font="700 60px "+dispFont;
+    ty=wrapText(x,pt.title,W/2,ty,W-220,74);
+    ty+=24;
   }
-  x.font="700 44px "+bodyFont;
-  wrapText(x,pt.text,W/2,ty,W-240,66);
+  x.font="700 42px "+bodyFont;
+  ty=wrapText(x,pt.text,W/2,ty,W-240,62);
   if(i>0){
     x.font="600 26px "+dispFont; x.fillStyle="#6D5C80";
-    x.fillText(t("page")+" "+i, W/2, H-56);
+    const pageY=Math.min(H-46, ty+54);
+    x.fillText(t("page")+" "+i, W/2, pageY);
   }
   return c;
 }
