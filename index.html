@@ -28,6 +28,10 @@ body{
     radial-gradient(circle at 85% 85%, rgba(255,122,89,.10) 0 100px, transparent 100px);
 }
 .wrap{max-width:760px;margin:0 auto;padding:28px 18px 80px}
+.iab{display:none;background:#B3261E;color:#fff;font-weight:800;font-size:.92rem;
+  padding:12px 16px;text-align:center;line-height:1.5}
+.iab.on{display:block}
+
 .screen{display:none}
 .screen.on{display:block;animation:fadein .4s ease}
 @keyframes fadein{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
@@ -141,6 +145,12 @@ html[dir=rtl] .pageno{letter-spacing:0}
 </style>
 </head>
 <body>
+<div class="iab" id="iabWarn">
+  <span class="ien">⚠️ You're inside an app's built-in browser — PDF downloads won't work here.
+  Tap the ⋯ menu and choose "Open in Safari" / "Open in Chrome".</span>
+  <span class="iar" style="display:none">⚠️ أنت داخل متصفح مدمج في تطبيق — تحميل ملف PDF لن يعمل هنا.
+  اضغط قائمة ⋯ واختر "الفتح في Safari" أو "الفتح في Chrome".</span>
+</div>
 <div class="wrap">
 
 <!-- ============ SCREEN 0: LANGUAGE ============ -->
@@ -359,7 +369,7 @@ space: {
   icon:"🚀",
   name:{en:"Space Adventure",ar:"مغامرة الفضاء"},
   tag:{en:"A silver rocket, planets & the Star Garden",ar:"صاروخ فضي وكواكب وحديقة النجوم"},
-  outfit:"Dress the character in a child-sized astronaut suit, white with orange accents and mission patches, with the helmet carried under one arm so the hair and full face stay clearly visible.",
+  outfit:"Dress the character in a child-sized astronaut suit, white with orange accents and cute star and rocket patches (no flags or country symbols anywhere), with the helmet carried under one arm so the hair and full face stay clearly visible.",
   palette:"deep blue and purple starry space palette with soft glowing accents",
   fun:{
     en:["Polishing the planets… 🪐","Teaching Bolt the robot to beep… 🤖","Sprinkling stardust everywhere… ✨","Warming up the rocket engines… 🚀","Painting the Milky Way… 🌌","Baking moon cookies… 🍪"],
@@ -541,8 +551,19 @@ const t=k=>T[S.lang][k];
 const story=()=>THEMES[S.theme].story;
 
 /* ==================== LANGUAGE ==================== */
+function inAppBrowser(){
+  const ua=navigator.userAgent||"";
+  if(/(FBAN|FBAV|FB_IAB|Instagram|Line\/|Twitter|TikTok|BytedanceWebview|Snapchat|LinkedInApp|GmailApp)/i.test(ua)) return true;
+  // iOS in-app webviews lack the "Safari" token that real Safari always sends
+  if(/iPhone|iPad|iPod/.test(ua) && !/Safari\//.test(ua) && !/CriOS|FxiOS|EdgiOS/.test(ua)) return true;
+  return false;
+}
+if(inAppBrowser()){ var _w=document.getElementById("iabWarn"); if(_w) _w.classList.add("on"); }
+
 window.setLang = function(l){
   S.lang=l;
+  document.querySelectorAll("#iabWarn .ien").forEach(e=>e.style.display=(l==="ar"?"none":"inline"));
+  document.querySelectorAll("#iabWarn .iar").forEach(e=>e.style.display=(l==="ar"?"inline":"none"));
   document.documentElement.lang = l==="ar"?"ar":"en";
   document.documentElement.dir  = l==="ar"?"rtl":"ltr";
   document.querySelectorAll("[data-t]").forEach(el=>{
