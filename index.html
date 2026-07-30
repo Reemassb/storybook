@@ -474,6 +474,70 @@ ocean: {
      ? ({text:`وعند الغروب، أعادت لولو ${n} إلى الشاطئ. قالت بهدوء: "غدًا في الموعد نفسه؟" تثاءب ${n} وهو يعانقها مودّعًا: "أكيد." وهمست الأمواج: تصبح على خير. النهاية 🌙`})
      : ({text:`وعند الغروب، أعادت لولو ${n} إلى الشاطئ. قالت بهدوء: "غدًا في الموعد نفسه؟" تثاءبت ${n} وهي تعانقها مودّعةً: "أكيد." وهمست الأمواج: تصبحين على خير. النهاية 🌙`}) },
   ]
+},
+
+/* ---------------- DINOSAUR 🦕 ---------------- */
+dino: {
+  icon:"🦕",
+  name:{en:"Dinosaur Adventure",ar:"مغامرة الديناصورات"},
+  tag:{en:"A hidden valley, Dino the gentle giant & shy Rex",ar:"وادٍ سري ودينو اللطيف وريكس الخجول"},
+  outfit:"Dress the character in a young explorer outfit: khaki shorts, a light shirt with a leaf-green vest with little pockets, sturdy little boots, and a small green explorer cap worn pushed back so the hair and full face stay clearly visible.",
+  palette:"lush prehistoric jungle palette of deep greens, soft misty light and warm sunbeams",
+  fun:{
+    en:["Waking up the dinosaurs… 🦕","Growing giant ferns… 🌿","Teaching Dino to smile… 💚","Filling the river with splashes… 💦","Lighting up the fireflies… ✨","Telling Rex to be gentle… 🦖"],
+    ar:["نوقظ الديناصورات… 🦕","نُنبت السرخس العملاق… 🌿","نعلّم دينو أن يبتسم… 💚","نملأ النهر برشّات الماء… 💦","نضيء اليراعات… ✨","نطلب من ريكس أن يكون لطيفًا… 🦖"]
+  },
+  story:[
+  { prompt:"The character in explorer clothes stands proudly on a mossy rock in a misty prehistoric valley at sunrise, giant ferns and tall jungle trees around, a friendly long-necked dinosaur silhouetted in the background, warm light beams.",
+    en:n=>({title:`${n}'s Dinosaur Adventure`, text:"A fun story about a brave little explorer."}),
+    ar:(n,g)=>({title:`مغامرة ${n} في وادي الديناصورات`, text: g==="boy"?"قصة ممتعة عن مستكشف صغير وشجاع.":"قصة ممتعة عن مستكشفة صغيرة وشجاعة."}) },
+
+  { prompt:"The character kneels beside huge three-toed dinosaur footprints pressed into soft mud on a misty jungle path, giant ferns around, looking curious and excited, soft morning fog.",
+    en:n=>({text:`One misty morning, ${n} found huge footprints in the mud. "What big prints! Where do they go?" said ${n}, and followed them with little steps.`}),
+    ar:(n,g)=> g==="boy"
+     ? ({text:`في صباح ضبابي، رأى ${n} آثار أقدام كبيرة على الطين. قال: «آثار عجيبة! إلى أين تؤدي؟» وتبِعها بخطوات صغيرة.`})
+     : ({text:`في صباح ضبابي، رأت ${n} آثار أقدام كبيرة على الطين. قالت: «آثار عجيبة! إلى أين تؤدي؟» وتبِعتها بخطوات صغيرة.`}) },
+
+  { prompt:"The character walks among enormous jungle trees with leaves as big as umbrellas, looking up in wonder at a gentle smiling long-necked dinosaur that leans down to say hello, soft green light.",
+    en:n=>({text:`${n} walked between the big trees. The leaves were like umbrellas! Then a kind voice said, "Hello! I'm Dino." ${n} looked up and saw a long-necked dinosaur smiling.`}),
+    ar:(n,g)=> g==="boy"
+     ? ({text:`مشى ${n} بين الأشجار الكبيرة. كانت الأوراق مثل المظلات! ثم سمع صوتًا لطيفًا: «مرحبًا! أنا دينو.» نظر ${n} إلى أعلى، فرأى ديناصورًا طويل العنق يبتسم له.`})
+     : ({text:`مشت ${n} بين الأشجار الكبيرة. كانت الأوراق مثل المظلات! ثم سمعت صوتًا لطيفًا: «مرحبًا! أنا دينو.» نظرت ${n} إلى أعلى، فرأت ديناصورًا طويل العنق يبتسم لها.`}) },
+
+  { prompt:"The character rides high on the neck of a friendly long-necked dinosaur, up among the treetops touching big leaves, waving at colorful prehistoric birds, bright green canopy and blue sky.",
+    en:n=>({text:`${n} climbed onto Dino's back. Up, up they went — almost touching the leaves! "I'm taller than the trees!" laughed ${n}, waving at the birds.`}),
+    ar:(n,g)=> g==="boy"
+     ? ({text:`ركب ${n} على ظهر دينو. ارتفعا عاليًا، حتى كادا يلمسان أوراق الشجر. ضحك ${n} وقال: «أنا أعلى من الأشجار!» ولوّح للطيور.`})
+     : ({text:`ركبت ${n} على ظهر دينو. ارتفعا عاليًا، حتى كادا يلمسان أوراق الشجر. ضحكت ${n} وقالت: «أنا أعلى من الأشجار!» ولوّحت للطيور.`}) },
+
+  { prompt:"Joyful river scene: the character plays in shallow sparkling water with a cute chubby baby dinosaur splashing water, the long-necked dinosaur watching happily, lush green jungle and sunbeams.",
+    en:n=>({text:`They came to the river. A baby dinosaur splashed the water — "Splash! Splash!" ${n} played with him and everyone laughed. ${n} was wet and very happy.`}),
+    ar:(n,g)=> g==="boy"
+     ? ({text:`وصلا إلى النهر. رشّ ديناصور صغير الماء: «رشّ! رشّ!» لعب ${n} معه، فضحك الجميع. صار ${n} مبللًا وسعيدًا.`})
+     : ({text:`وصلا إلى النهر. رشّ ديناصور صغير الماء: «رشّ! رشّ!» لعبت ${n} معه، فضحك الجميع. صارت ${n} مبللة وسعيدة.`}) },
+
+  { prompt:"The character stands bravely on a jungle path taking a deep breath, one small step forward, as a very large friendly-looking dinosaur approaches in the misty distance; the long-necked dinosaur stands protectively beside the child; gentle not scary mood.",
+    en:n=>({text:`Suddenly ${n} heard heavy steps: "Boom… boom…" A big dinosaur came closer. "Don't be afraid," said Dino. "That's Rex. He is shy and wants a friend." ${n} took a deep breath and stepped forward.`}),
+    ar:(n,g)=> g==="boy"
+     ? ({text:`فجأة سمع ${n} خطوات ثقيلة: «بوم... بوم...» اقترب ديناصور كبير. قال دينو: «لا تخف. هذا ريكس. إنه خجول ويريد صديقًا.» أخذ ${n} نفسًا عميقًا وتقدّم خطوة صغيرة.`})
+     : ({text:`فجأة سمعت ${n} خطوات ثقيلة: «بوم... بوم...» اقترب ديناصور كبير. قال دينو: «لا تخافي. هذا ريكس. إنه خجول ويريد صديقة.» أخذت ${n} نفسًا عميقًا وتقدّمت خطوة صغيرة.`}) },
+
+  { prompt:"The character waves hello with a big smile at a huge gentle dinosaur with soft kind eyes who smiles back and wags his tail happily, the long-necked dinosaur beside them, warm sunny jungle clearing.",
+    en:n=>({text:`Rex was huge, but his eyes were kind. ${n} waved and said, "Hello Rex! Will you play with us?" Rex smiled and wagged his tail. "You're not scary at all!" laughed ${n}. "You're my friend!"`}),
+    ar:(n,g)=> g==="boy"
+     ? ({text:`كان ريكس ضخمًا، لكن عينيه كانتا لطيفتين. لوّح ${n} وقال: «مرحبًا يا ريكس! هل تلعب معنا؟» ابتسم ريكس وهزّ ذيله بسعادة. ضحك ${n} وقال: «أنت لست مخيفًا! أنت صديقي!»`})
+     : ({text:`كان ريكس ضخمًا، لكن عينيه كانتا لطيفتين. لوّحت ${n} وقالت: «مرحبًا يا ريكس! هل تلعب معنا؟» ابتسم ريكس وهزّ ذيله بسعادة. ضحكت ${n} وقالت: «أنت لست مخيفًا! أنت صديقي!»`}) },
+
+  { prompt:"Sunset feast in the valley: the character sits happily surrounded by friendly dinosaurs of different sizes and a small winged dinosaur, sharing baskets of berries, orange and pink sky above the jungle.",
+    en:n=>({text:`At sunset, all the valley friends gathered around ${n}. They ate berries, they sang, and they watched the sky turn orange. "I'm happy we are friends!" said Rex.`}),
+    ar:(n,g)=>({text:`عند الغروب، اجتمع أصدقاء الوادي حول ${n}. أكلوا التوت، وغنّوا، وشاهدوا السماء تصبح برتقالية. قال ريكس: «أنا سعيد لأننا أصبحنا أصدقاء!»`}) },
+
+  { prompt:"Cozy night scene: the character sleeps snugly in a big warm nest of soft leaves, a baby dinosaur curled up nearby and the long-necked dinosaur resting close by, hundreds of glowing fireflies lighting the peaceful valley, starry sky.",
+    en:n=>({text:`In a warm nest of leaves, ${n} yawned and said, "What an adventure!" Dino whispered, "Tomorrow we will have a new one." The fireflies lit up the valley, and ${n} closed both eyes happily. The End 🦕`}),
+    ar:(n,g)=> g==="boy"
+     ? ({text:`في عش دافئ من أوراق الشجر، تثاءب ${n} وقال: «يا لها من مغامرة!» همس دينو: «غدًا سنعيش مغامرة جديدة.» أضاءت اليراعات الوادي، وأغمض ${n} عينيه بسعادة. النهاية 🦕`})
+     : ({text:`في عش دافئ من أوراق الشجر، تثاءبت ${n} وقالت: «يا لها من مغامرة!» همس دينو: «غدًا سنعيش مغامرة جديدة.» أضاءت اليراعات الوادي، وأغمضت ${n} عينيها بسعادة. النهاية 🦕`}) },
+  ]
 }
 };
 
